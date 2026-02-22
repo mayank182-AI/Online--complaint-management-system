@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Online Complaint Management System</title>
+
+<style>
+
+/* ===== GENERAL ===== */
+
+body{
+font-family: Impact, Haettenschweiler, 'Arial Narrow Bold';
+margin:0;
+background:#f0f2f5;
+}
+
+header{
+background:black;
+color:white;
+padding:15px;
+text-align:center;
+font-size:24px;
+}
+
+/* ===== LAYOUT ===== */
+
+.container{
+display:flex;
+}
+
+.sidebar{
+width:220px;
+background:#263238;
+height:100vh;
+color:white;
+padding:20px;
+}
+
+.sidebar h2{
+text-align:center;
+}
+
+.sidebar a{
+display:block;
+color:white;
+padding:10px;
+margin:10px 0;
+text-decoration:none;
+background:#37474f;
+border-radius:5px;
+}
+
+.sidebar a:hover{
+background:#1e88e5;
+}
+
+/* MAIN */
+
+.main{
+flex:1;
+padding:20px;
+}
+
+/* FORM */
+
+.form-box{
+
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0px 2px 10px gray;
+width:400px;
+
+}
+
+input, textarea, select{
+
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:5px;
+border:1px solid gray;
+
+}
+
+button{
+
+background:#1e88e5;
+color:white;
+border:none;
+padding:12px;
+width:100%;
+margin-top:10px;
+border-radius:5px;
+font-size:16px;
+cursor:pointer;
+
+}
+
+button:hover{
+
+background:#1565c0;
+
+}
+
+/* TABLE */
+
+table{
+
+width:100%;
+margin-top:20px;
+background:white;
+border-collapse:collapse;
+
+}
+
+th{
+
+background:#1e88e5;
+color:white;
+padding:10px;
+
+}
+
+td{
+
+padding:10px;
+border-bottom:1px solid #ddd;
+
+}
+
+.statusPending{
+color:red;
+font-weight:bold;
+}
+
+.statusResolved{
+color:green;
+font-weight:bold;
+}
+
+/* SEARCH */
+
+.searchBox{
+
+padding:10px;
+width:300px;
+margin-bottom:10px;
+
+}
+
+.footer{
+
+text-align:center;
+padding:10px;
+background:#263238;
+color:white;
+margin-top:20px;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<header>
+
+ONLINE COMPLAINT MANAGEMENT SYSTEM
+
+</header>
+
+
+<div class="container">
+
+<!-- Sidebar -->
+
+<div class="sidebar">
+
+<h2>Menu</h2>
+
+<a href="#">Dashboard</a>
+<a href="#">Submit Complaint</a>
+<a href="#">View Complaints</a>
+
+</div>
+
+
+<!-- Main -->
+
+<div class="main">
+
+<h2>Submit Complaint</h2>
+
+<div class="form-box">
+
+<input id="name" placeholder="Your Name">
+
+<input id="title" placeholder="Complaint Title">
+
+<select id="category">
+
+<option>Electricity</option>
+<option>Water</option>
+<option>Internet</option>
+<option>Road</option>
+
+</select>
+
+<textarea id="description" placeholder="Complaint Description"></textarea>
+
+<button onclick="addComplaint()">
+
+Submit Complaint
+
+</button>
+
+</div>
+
+
+<h2>Complaint List</h2>
+
+<input class="searchBox"
+id="search"
+placeholder="Search Complaint..."
+onkeyup="searchComplaint()">
+
+
+<table>
+
+<tr>
+
+<th>ID</th>
+<th>Name</th>
+<th>Title</th>
+<th>Category</th>
+<th>Status</th>
+<th>Action</th>
+
+</tr>
+
+<tbody id="tableData">
+
+</tbody>
+
+</table>
+
+
+</div>
+
+</div>
+
+
+<div class="footer">
+
+Complaint Management System © 2026
+
+</div>
+
+
+
+<script>
+
+/* Load Complaints */
+
+let complaints =
+JSON.parse(localStorage.getItem("complaints")) || [];
+
+display();
+
+
+function addComplaint(){
+
+let name=
+document.getElementById("name").value;
+
+let title=
+document.getElementById("title").value;
+
+let category=
+document.getElementById("category").value;
+
+let description=
+document.getElementById("description").value;
+
+
+if(name=="" || title==""){
+
+alert("Fill all fields");
+return;
+
+}
+
+
+let complaint={
+
+id:Date.now(),
+
+name:name,
+
+title:title,
+
+category:category,
+
+description:description,
+
+status:"Pending"
+
+};
+
+
+complaints.push(complaint);
+
+localStorage.setItem(
+"complaints",
+JSON.stringify(complaints)
+);
+
+
+display();
+
+alert("Complaint Submitted");
+
+}
+
+
+
+/* Display Complaints */
+
+function display(){
+
+let data="";
+
+complaints.forEach(c=>{
+
+data+=`
+
+<tr>
+
+<td>${c.id}</td>
+
+<td>${c.name}</td>
+
+<td>${c.title}</td>
+
+<td>${c.category}</td>
+
+<td class="${
+c.status=="Pending"?
+'statusPending':'statusResolved'
+}">
+
+${c.status}
+
+</td>
+
+<td>
+
+<button onclick="resolve(${c.id})">
+
+Resolve
+
+</button>
+
+<button onclick="deleteComplaint(${c.id})">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+document.getElementById("tableData")
+.innerHTML=data;
+
+}
+
+
+/* Resolve */
+
+function resolve(id){
+
+complaints.forEach(c=>{
+
+if(c.id==id){
+
+c.status="Resolved";
+
+}
+
+});
+
+
+localStorage.setItem(
+"complaints",
+JSON.stringify(complaints)
+);
+
+display();
+
+}
+
+
+
+/* Delete */
+
+function deleteComplaint(id){
+
+complaints=
+complaints.filter(c=>c.id!=id);
+
+localStorage.setItem(
+"complaints",
+JSON.stringify(complaints)
+);
+
+display();
+
+}
+
+
+/* Search */
+
+function searchComplaint(){
+
+let keyword=
+document.getElementById("search").value
+.toLowerCase();
+
+let filtered=
+complaints.filter(c=>
+
+c.title.toLowerCase().includes(keyword)
+
+);
+
+let data="";
+
+filtered.forEach(c=>{
+
+data+=`
+
+<tr>
+
+<td>${c.id}</td>
+<td>${c.name}</td>
+<td>${c.title}</td>
+<td>${c.category}</td>
+<td>${c.status}</td>
+
+<td>
+
+<button onclick="resolve(${c.id})">
+
+Resolve
+
+</button>
+
+<button onclick="deleteComplaint(${c.id})">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+document.getElementById("tableData")
+.innerHTML=data;
+
+}
+
+
+</script>
+
+
+</body>
+</html>
