@@ -1,50 +1,100 @@
-import { db } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import {
   addDoc,
   collection,
-  deleteDoc,
-  doc,
+  deleteDoc, doc,
   getDocs,
-  updateDoc
+  query,
+  updateDoc,
+  where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// GLOBAL DATA
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const ADMIN_EMAIL = "admin@gmail.com";
+let isAdmin = false;
 let data = [];
 
-// ADD COMPLAINT
-window.addComplaint = async function(){
-  const name = document.getElementById("name").value.trim();
-  const title = document.getElementById("title").value.trim();
-  const category = document.getElementById("category").value;
-  const desc = document.getElementById("desc").value.trim();
+// AUTH
+window.register = async ()=>{
+  try{
+    await createUserWithEmailAndPassword(auth,email.value,password.value);
+    alert("Registered");
+  }catch(e){ alert(e.message); }
+};
+
+window.login = async ()=>{
+  try{
+    await signInWithEmailAndPassword(auth,email.value,password.value);
+    alert("Login success");
+  }catch(e){ alert(e.message); }
+};
+
+window.logout = async ()=>{
+  await signOut(auth);
+  alert("Logged out");
+};
+
+// ADD
+window.addComplaint = async ()=>{
+
+  if(!auth.currentUser){
+    alert("Login first");
+    return;
+  }
+
+  let name = document.getElementById("name").value;
+  let title = document.getElementById("title").value;
+  let category = document.getElementById("category").value;
+  let desc = document.getElementById("desc").value;
 
   if(!name || !title || !desc){
-    alert("⚠ Fill all fields");
+    alert("Fill all fields");
     return;
   }
 
   await addDoc(collection(db,"complaints"),{
-    name,title,category,desc,
-    status:"Pending",
-    created:Date.now()
+    uid: auth.currentUser.uid,
+    name: name,
+    title: title,
+    category: category,
+    desc: desc,
+    status: "Pending"
   });
+
+  alert("Complaint Added ✅");
+
+  // clear fields
+  document.getElementById("name").value = "";
+  document.getElementById("title").value = "";
+  document.getElementById("desc").value = "";
 
   showAll();
+};
 
-  document.getElementById("name").value="";
-  document.getElementById("title").value="";
-  document.getElementById("desc").value="";
-}
+// READ
+async function showAll(){
 
-// READ DATA
-window.showAll = async function(){
-  const snap = await getDocs(collection(db,"complaints"));
-  data = [];
+  let q;
 
-  snap.forEach(docSnap=>{
-    data.push({id:docSnap.id,...docSnap.data()});
-  });
+  if(isAdmin){
+    q = collection(db,"complaints");
+  }else{
+    q = query(collection(db,"complaints"),
+      where("uid","==",auth.currentUser.uid)
+    );
+  }
+
+  const snap = await getDocs(q);
+  data=[];
+
+  snap.forEach(d=>data.push({id:d.id,...d.data()}));
 
   render(data);
 }
@@ -53,50 +103,46 @@ window.showAll = async function(){
 function render(list){
   let p=0,r=0;
 
-  const complaints = document.getElementById("complaints");
+  const box = document.getElementById("complaints");
 
-  complaints.innerHTML = list.map(c=>{
-    c.status==="Pending"?p++:r++;
+  box.innerHTML = list.map(c=>{
+    c.status=="Pending"?p++:r++;
 
     return `
     <div class="box">
-      <small>ID: ${c.id}</small>
+      ${isAdmin ? `<small>👤 ${c.name}</small>` : ""}
       <h3>${c.title}</h3>
       <p>${c.desc}</p>
-      <b>${c.category}</b><br><br>
+      <span class="${c.status=="Pending"?"red":"green"}">${c.status}</span><br><br>
 
-      <span class="status ${c.status==="Pending"?"red":"green"}">
-        ${c.status}
-      </span><br><br>
-
-      <button onclick="toggle('${c.id}','${c.status}')">🔄 Toggle</button>
-      <button onclick="removeItem('${c.id}')">❌ Delete</button>
+      <button onclick="toggle('${c.id}','${c.status}')">Toggle</button>
+      <button onclick="removeItem('${c.id}')">Delete</button>
     </div>`;
   }).join("");
 
-  document.getElementById("total").innerText = list.length;
-  document.getElementById("pending").innerText = p;
-  document.getElementById("resolved").innerText = r;
+  total.innerText=list.length;
+  pending.innerText=p;
+  resolved.innerText=r;
 }
 
 // UPDATE
-window.toggle = async function(id,status){
+window.toggle = async(id,status)=>{
   await updateDoc(doc(db,"complaints",id),{
-    status: status==="Pending"?"Resolved":"Pending"
+    status: status=="Pending"?"Resolved":"Pending"
   });
   showAll();
-}
+};
 
 // DELETE
-window.removeItem = async function(id){
+window.removeItem = async(id)=>{
   if(confirm("Delete?")){
     await deleteDoc(doc(db,"complaints",id));
     showAll();
   }
-}
+};
 
 // SEARCH
-window.search = function(){
+window.search = ()=>{
   let k = document.getElementById("search").value.toLowerCase();
 
   render(data.filter(c =>
@@ -104,28 +150,29 @@ window.search = function(){
     c.desc.toLowerCase().includes(k) ||
     c.category.toLowerCase().includes(k)
   ));
-}
+};
 
-// FILTER
-window.filterStatus = function(){
-  let f = document.getElementById("filter").value;
+// AUTH STATE
+onAuthStateChanged(auth,(user)=>{
+  const authBox = document.getElementById("authBox");
+  const app = document.getElementById("app");
+  const adminPanel = document.getElementById("adminPanel");
 
-  if(f==='all') render(data);
-  else render(data.filter(c=>c.status===f));
-}
+  if(user){
+    isAdmin = user.email === ADMIN_EMAIL;
 
-// CLEAR ALL (Firebase version)
-window.clearData = async function(){
-  if(confirm("Delete all complaints?")){
-    const snap = await getDocs(collection(db,"complaints"));
+    authBox.style.display="none";
+    app.style.display="block";
 
-    snap.forEach(async d=>{
-      await deleteDoc(doc(db,"complaints",d.id));
-    });
+    if(isAdmin){
+      adminPanel.style.display="block";
+    }else{
+      adminPanel.style.display="none";
+    }
 
     showAll();
+  }else{
+    authBox.style.display="block";
+    app.style.display="none";
   }
-}
-
-// INIT
-showAll();
+});
