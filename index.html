@@ -3,16 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Complaint System</title>
+<title>Smart Complaint System</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<h2>🚀 Complaint System</h2>
+<header>
+  <h2>🚀 Complaint Dashboard</h2>
+  <button onclick="logout()">Logout</button>
+</header>
 
-<!-- LOGIN -->
+<!-- AUTH -->
 <div id="authBox">
+  <h3>Login / Register</h3>
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
   <button onclick="register()">Register</button>
@@ -22,19 +26,49 @@
 <!-- APP -->
 <div id="app" style="display:none">
 
-  <h3>Add Complaint</h3>
-  <input id="name" placeholder="Name">
-  <input id="title" placeholder="Title">
-  <textarea id="desc" placeholder="Description"></textarea>
-  <button onclick="addComplaint()">Submit</button>
+<div class="container">
 
-  <h3>Complaints</h3>
-  <div id="list"></div>
+<div class="sidebar">
+  <h2>Menu</h2>
+  <div onclick="showAll()">All Complaints</div>
 
-  <button onclick="logout()">Logout</button>
-
+  <div id="adminPanel" style="display:none">
+    <h3>Admin</h3>
+    <div onclick="showAll()">All Users Data</div>
+  </div>
 </div>
 
+<div class="main">
+
+<div class="cards">
+  <div>Total <h2 id="total">0</h2></div>
+  <div>Pending <h2 id="pending">0</h2></div>
+  <div>Resolved <h2 id="resolved">0</h2></div>
+</div>
+
+<div class="form">
+  <input id="name" placeholder="Name">
+  <input id="title" placeholder="Title">
+  <select id="category">
+    <option>Electricity</option>
+    <option>Internet</option>
+    <option>Water</option>
+    <option>Road</option>
+  </select>
+  <textarea id="desc" placeholder="Description"></textarea>
+  <button onclick="addComplaint()">Submit</button>
+</div>
+
+<input id="search" placeholder="Search..." onkeyup="search()">
+
+<div id="complaints"></div>
+
+</div>
+</div>
+</div>
+
+<!-- IMPORTANT: module path fixed -->
 <script type="module" src="./script.js"></script>
+
 </body>
 </html>
