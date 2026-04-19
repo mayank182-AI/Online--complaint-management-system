@@ -1,21 +1,27 @@
-import { db, auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import {
-  collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where
+  addDoc,
+  collection,
+  deleteDoc, doc,
+  getDocs,
+  query,
+  updateDoc,
+  where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 import {
   createUserWithEmailAndPassword,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const ADMIN_EMAIL = "admin@gmail.com";
 let isAdmin = false;
 let data = [];
 
-// REGISTER
+// AUTH
 window.register = async ()=>{
   try{
     await createUserWithEmailAndPassword(auth,email.value,password.value);
@@ -23,21 +29,19 @@ window.register = async ()=>{
   }catch(e){ alert(e.message); }
 };
 
-// LOGIN
 window.login = async ()=>{
   try{
     await signInWithEmailAndPassword(auth,email.value,password.value);
-    alert("Login Success");
+    alert("Login success");
   }catch(e){ alert(e.message); }
 };
 
-// LOGOUT
 window.logout = async ()=>{
   await signOut(auth);
-  alert("Logged Out");
+  alert("Logged out");
 };
 
-// ADD COMPLAINT (FIXED)
+// ADD
 window.addComplaint = async ()=>{
 
   if(!auth.currentUser){
@@ -45,10 +49,10 @@ window.addComplaint = async ()=>{
     return;
   }
 
-  const name = document.getElementById("name").value;
-  const title = document.getElementById("title").value;
-  const category = document.getElementById("category").value;
-  const desc = document.getElementById("desc").value;
+  let name = document.getElementById("name").value;
+  let title = document.getElementById("title").value;
+  let category = document.getElementById("category").value;
+  let desc = document.getElementById("desc").value;
 
   if(!name || !title || !desc){
     alert("Fill all fields");
@@ -57,18 +61,19 @@ window.addComplaint = async ()=>{
 
   await addDoc(collection(db,"complaints"),{
     uid: auth.currentUser.uid,
-    name,
-    title,
-    category,
-    desc,
-    status:"Pending"
+    name: name,
+    title: title,
+    category: category,
+    desc: desc,
+    status: "Pending"
   });
 
-  alert("Complaint Added");
+  alert("Complaint Added ✅");
 
-  document.getElementById("name").value="";
-  document.getElementById("title").value="";
-  document.getElementById("desc").value="";
+  // clear fields
+  document.getElementById("name").value = "";
+  document.getElementById("title").value = "";
+  document.getElementById("desc").value = "";
 
   showAll();
 };
@@ -115,9 +120,9 @@ function render(list){
     </div>`;
   }).join("");
 
-  document.getElementById("total").innerText=list.length;
-  document.getElementById("pending").innerText=p;
-  document.getElementById("resolved").innerText=r;
+  total.innerText=list.length;
+  pending.innerText=p;
+  resolved.innerText=r;
 }
 
 // UPDATE
@@ -147,7 +152,7 @@ window.search = ()=>{
   ));
 };
 
-// AUTH STATE (FIXED)
+// AUTH STATE
 onAuthStateChanged(auth,(user)=>{
   const authBox = document.getElementById("authBox");
   const app = document.getElementById("app");
@@ -159,12 +164,13 @@ onAuthStateChanged(auth,(user)=>{
     authBox.style.display="none";
     app.style.display="block";
 
-    if(adminPanel){
-      adminPanel.style.display = isAdmin ? "block" : "none";
+    if(isAdmin){
+      adminPanel.style.display="block";
+    }else{
+      adminPanel.style.display="none";
     }
 
     showAll();
-
   }else{
     authBox.style.display="block";
     app.style.display="none";
