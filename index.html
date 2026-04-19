@@ -14,39 +14,45 @@
   <button onclick="logout()">Logout</button>
 </header>
 
-<!-- AUTH -->
-<div id="authBox">
-  <h3>Login / Register</h3>
+<!-- LOGIN -->
+<div id="authBox" class="card">
+  <h3>🔐 Login / Register</h3>
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
   <button onclick="register()">Register</button>
   <button onclick="login()">Login</button>
 </div>
 
-<!-- APP -->
+<!-- MAIN APP -->
 <div id="app" style="display:none">
 
 <div class="container">
 
+<!-- SIDEBAR -->
 <div class="sidebar">
   <h2>Menu</h2>
-  <div onclick="showAll()">All Complaints</div>
+  <div onclick="showAll()">📋 All Complaints</div>
 
+  <!-- ADMIN PANEL -->
   <div id="adminPanel" style="display:none">
-    <h3>Admin</h3>
+    <h3>👑 Admin</h3>
     <div onclick="showAll()">All Users Data</div>
   </div>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
+<!-- DASHBOARD -->
 <div class="cards">
-  <div>Total <h2 id="total">0</h2></div>
-  <div>Pending <h2 id="pending">0</h2></div>
-  <div>Resolved <h2 id="resolved">0</h2></div>
+  <div class="card total">Total<br><h2 id="total">0</h2></div>
+  <div class="card pending">Pending<br><h2 id="pending">0</h2></div>
+  <div class="card resolved">Resolved<br><h2 id="resolved">0</h2></div>
 </div>
 
+<!-- FORM -->
 <div class="form">
+  <h3>Add Complaint</h3>
   <input id="name" placeholder="Name">
   <input id="title" placeholder="Title">
   <select id="category">
@@ -59,16 +65,16 @@
   <button onclick="addComplaint()">Submit</button>
 </div>
 
-<input id="search" placeholder="Search..." onkeyup="search()">
+<!-- SEARCH -->
+<input class="search" id="search" placeholder="Search..." onkeyup="search()">
 
-<div id="complaints"></div>
+<!-- DATA -->
+<div id="complaints" class="grid"></div>
 
 </div>
 </div>
 </div>
 
-<!-- IMPORTANT: module path fixed -->
-<script type="module" src="./script.js"></script>
-
+<script type="module" src="script.js"></script>
 </body>
 </html>
