@@ -3,78 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Complaint System</title>
+<title>Complaint System</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header>
-  <h2>🚀 Complaint Dashboard</h2>
-  <button onclick="logout()">Logout</button>
-</header>
+<h2>🚀 Complaint System</h2>
 
 <!-- LOGIN -->
-<div id="authBox" class="card">
-  <h3>🔐 Login / Register</h3>
+<div id="authBox">
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
   <button onclick="register()">Register</button>
   <button onclick="login()">Login</button>
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="app" style="display:none">
 
-<div class="container">
-
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>Menu</h2>
-  <div onclick="showAll()">📋 All Complaints</div>
-
-  <!-- ADMIN PANEL -->
-  <div id="adminPanel" style="display:none">
-    <h3>👑 Admin</h3>
-    <div onclick="showAll()">All Users Data</div>
-  </div>
-</div>
-
-<!-- MAIN -->
-<div class="main">
-
-<!-- DASHBOARD -->
-<div class="cards">
-  <div class="card total">Total<br><h2 id="total">0</h2></div>
-  <div class="card pending">Pending<br><h2 id="pending">0</h2></div>
-  <div class="card resolved">Resolved<br><h2 id="resolved">0</h2></div>
-</div>
-
-<!-- FORM -->
-<div class="form">
   <h3>Add Complaint</h3>
   <input id="name" placeholder="Name">
   <input id="title" placeholder="Title">
-  <select id="category">
-    <option>Electricity</option>
-    <option>Internet</option>
-    <option>Water</option>
-    <option>Road</option>
-  </select>
   <textarea id="desc" placeholder="Description"></textarea>
   <button onclick="addComplaint()">Submit</button>
-</div>
 
-<!-- SEARCH -->
-<input class="search" id="search" placeholder="Search..." onkeyup="search()">
+  <h3>Complaints</h3>
+  <div id="list"></div>
 
-<!-- DATA -->
-<div id="complaints" class="grid"></div>
+  <button onclick="logout()">Logout</button>
 
 </div>
-</div>
-</div>
 
-<script type="module" src="script.js"></script>
+<script type="module" src="./script.js"></script>
 </body>
 </html>
