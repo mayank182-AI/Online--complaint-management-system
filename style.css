@@ -1,93 +1,18 @@
 body{
-  margin:0;
-  font-family:'Segoe UI';
-  background:linear-gradient(135deg,#667eea,#764ba2);
-}
-
-header{
-  display:flex;
-  justify-content:space-between;
-  padding:15px;
-  background:#000;
-  color:white;
-}
-
-.container{display:flex}
-
-.sidebar{
-  width:220px;
-  background:#222;
-  color:white;
+  font-family:Arial;
   padding:20px;
-  height:100vh;
+  background:#f2f2f2;
 }
 
-.sidebar div{
+input,textarea,button{
+  display:block;
   margin:10px 0;
   padding:10px;
-  background:#333;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-.main{flex:1;padding:20px}
-
-.cards{
-  display:flex;
-  gap:15px;
-}
-
-.card{
-  flex:1;
-  padding:20px;
-  color:white;
-  border-radius:10px;
-  text-align:center;
-}
-
-.total{background:#ff6a00}
-.pending{background:#f39c12}
-.resolved{background:#27ae60}
-
-.form{
-  background:white;
-  padding:20px;
-  margin:20px 0;
-  border-radius:10px;
-}
-
-input,select,textarea{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
+  width:300px;
 }
 
 button{
-  padding:10px;
-  margin-top:10px;
   background:#667eea;
   color:white;
   border:none;
-  cursor:pointer;
 }
-
-.search{
-  width:100%;
-  padding:10px;
-  margin-bottom:20px;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-  gap:20px;
-}
-
-.box{
-  background:white;
-  padding:15px;
-  border-radius:10px;
-}
-
-.red{background:red;color:white;padding:5px}
-.green{background:green;color:white;padding:5px}
