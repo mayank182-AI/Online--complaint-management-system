@@ -23,7 +23,7 @@
   <button onclick="login()">Login</button>
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="app" style="display:none">
 
 <div class="container">
@@ -33,24 +33,21 @@
   <h2>Menu</h2>
   <div onclick="showAll()">📋 All Complaints</div>
 
-  <!-- ADMIN PANEL -->
   <div id="adminPanel" style="display:none">
     <h3>👑 Admin</h3>
-    <div onclick="showAll()">All Users Data</div>
+    <div onclick="showAll()">All Users</div>
   </div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-<!-- DASHBOARD -->
 <div class="cards">
   <div class="card total">Total<br><h2 id="total">0</h2></div>
   <div class="card pending">Pending<br><h2 id="pending">0</h2></div>
   <div class="card resolved">Resolved<br><h2 id="resolved">0</h2></div>
 </div>
 
-<!-- FORM -->
 <div class="form">
   <h3>Add Complaint</h3>
   <input id="name" placeholder="Name">
@@ -65,18 +62,15 @@
   <button onclick="addComplaint()">Submit</button>
 </div>
 
-<!-- SEARCH -->
-<input class="search" id="search" placeholder="Search..." onkeyup="search()">
+<input id="search" class="search" placeholder="Search..." onkeyup="search()">
 
-<!-- DATA -->
 <div id="complaints" class="grid"></div>
 
 </div>
 </div>
+
 </div>
 
 <script type="module" src="script.js"></script>
 </body>
 </html>
-
-
