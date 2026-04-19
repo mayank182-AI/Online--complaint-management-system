@@ -8,8 +8,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 import {
-  collection, addDoc, getDocs, deleteDoc, doc
+  collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const ADMIN_EMAIL = "admin@gmail.com";
+let isAdmin = false;
+let data = [];
 
 // REGISTER
 window.register = async ()=>{
@@ -42,59 +46,122 @@ window.logout = async ()=>{
   await signOut(auth);
 };
 
-// ADD
+// ADD (FIXED)
 window.addComplaint = async ()=>{
-  const user = auth.currentUser;
-
-  if(!user){
+  if(!auth.currentUser){
     alert("Login first");
     return;
   }
 
+  const name = document.getElementById("name").value;
+  const title = document.getElementById("title").value;
+  const category = document.getElementById("category").value;
+  const desc = document.getElementById("desc").value;
+
+  if(!name || !title || !desc){
+    alert("Fill all fields");
+    return;
+  }
+
   await addDoc(collection(db,"complaints"),{
-    uid:user.uid,
-    name:document.getElementById("name").value,
-    title:document.getElementById("title").value,
-    desc:document.getElementById("desc").value
+    uid: auth.currentUser.uid,
+    name,
+    title,
+    category,
+    desc,
+    status:"Pending"
   });
 
-  loadData();
+  alert("Added");
+  showAll();
 };
 
 // READ
-async function loadData(){
-  const snap = await getDocs(collection(db,"complaints"));
+async function showAll(){
 
-  let html="";
+  let q;
 
-  snap.forEach(d=>{
-    const c = d.data();
+  if(isAdmin){
+    q = collection(db,"complaints");
+  }else{
+    q = query(collection(db,"complaints"),
+      where("uid","==",auth.currentUser.uid)
+    );
+  }
 
-    html += `
-    <div>
-      <b>${c.title}</b>
-      <p>${c.desc}</p>
-      <button onclick="del('${d.id}')">Delete</button>
-    </div>`;
-  });
+  const snap = await getDocs(q);
+  data=[];
 
-  document.getElementById("list").innerHTML = html;
+  snap.forEach(d=>data.push({id:d.id,...d.data()}));
+
+  render(data);
 }
 
-// DELETE
-window.del = async(id)=>{
-  await deleteDoc(doc(db,"complaints",id));
-  loadData();
+// RENDER
+function render(list){
+  let p=0,r=0;
+
+  document.getElementById("complaints").innerHTML =
+    list.map(c=>{
+      c.status=="Pending"?p++:r++;
+
+      return `
+      <div>
+        ${isAdmin ? `<small>${c.name}</small>` : ""}
+        <h3>${c.title}</h3>
+        <p>${c.desc}</p>
+        <button onclick="toggle('${c.id}','${c.status}')">Toggle</button>
+        <button onclick="removeItem('${c.id}')">Delete</button>
+      </div>`;
+    }).join("");
+
+  document.getElementById("total").innerText=list.length;
+  document.getElementById("pending").innerText=p;
+  document.getElementById("resolved").innerText=r;
+}
+
+// UPDATE
+window.toggle = async(id,status)=>{
+  await updateDoc(doc(db,"complaints",id),{
+    status: status=="Pending"?"Resolved":"Pending"
+  });
+  showAll();
 };
 
-// AUTH STATE (MAIN FIX)
+// DELETE
+window.removeItem = async(id)=>{
+  await deleteDoc(doc(db,"complaints",id));
+  showAll();
+};
+
+// SEARCH
+window.search = ()=>{
+  let k = document.getElementById("search").value.toLowerCase();
+  render(data.filter(c=>c.title.toLowerCase().includes(k)));
+};
+
+// AUTH STATE (FIXED CORE)
 onAuthStateChanged(auth,(user)=>{
+  console.log("User:", user);
+
+  const authBox = document.getElementById("authBox");
+  const app = document.getElementById("app");
+  const adminPanel = document.getElementById("adminPanel");
+
   if(user){
-    document.getElementById("authBox").style.display="none";
-    document.getElementById("app").style.display="block";
-    loadData();
+    isAdmin = user.email === ADMIN_EMAIL;
+
+    authBox.style.display="none";
+    app.style.display="block";
+
+    if(adminPanel){
+      adminPanel.style.display = isAdmin ? "block" : "none";
+    }
+
+    showAll();
+
   }else{
-    document.getElementById("authBox").style.display="block";
-    document.getElementById("app").style.display="none";
+    authBox.style.display="block";
+    app.style.display="none";
   }
 });
