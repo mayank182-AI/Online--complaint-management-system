@@ -1,80 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Complaint System</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Complaint System</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- EMAILJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <header>
-  <h2>🚀 Complaint Dashboard</h2>
+  <h2>🚀 Smart Complaint Dashboard</h2>
   <button onclick="logout()">Logout</button>
 </header>
 
-<!-- LOGIN -->
-<div id="authBox" class="card">
-  <h3>🔐 Login / Register</h3>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="register()">Register</button>
-  <button onclick="login()">Login</button>
+<!-- AUTH -->
+<div id="authBox">
+
+  <h2>Email OTP Login</h2>
+
+  <input type="email" id="email" placeholder="Enter Email">
+
+  <button onclick="sendOTP()">Send OTP</button>
+
+  <input type="text" id="otp" placeholder="Enter OTP">
+
+  <button onclick="verifyOTP()">Verify OTP</button>
+
 </div>
 
 <!-- MAIN APP -->
-<div id="app" style="display:none">
+<div id="app" style="display:none;">
 
 <div class="container">
 
 <!-- SIDEBAR -->
 <div class="sidebar">
+
   <h2>Menu</h2>
+
   <div onclick="showAll()">📋 All Complaints</div>
 
-  <!-- ADMIN PANEL -->
-  <div id="adminPanel" style="display:none">
-    <h3>👑 Admin</h3>
-    <div onclick="showAll()">All Users Data</div>
-  </div>
+  <div onclick="clearAll()">🗑 Clear All</div>
+
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-<!-- DASHBOARD -->
+<!-- CARDS -->
 <div class="cards">
-  <div class="card total">Total<br><h2 id="total">0</h2></div>
-  <div class="card pending">Pending<br><h2 id="pending">0</h2></div>
-  <div class="card resolved">Resolved<br><h2 id="resolved">0</h2></div>
+
+  <div class="card total">
+    Total
+    <h2 id="total">0</h2>
+  </div>
+
+  <div class="card pending">
+    Pending
+    <h2 id="pending">0</h2>
+  </div>
+
+  <div class="card resolved">
+    Resolved
+    <h2 id="resolved">0</h2>
+  </div>
+
 </div>
 
 <!-- FORM -->
 <div class="form">
+
   <h3>Add Complaint</h3>
-  <input id="name" placeholder="Name">
-  <input id="title" placeholder="Title">
+
+  <input id="name" placeholder="Your Name">
+
+  <input id="title" placeholder="Complaint Title">
+
   <select id="category">
     <option>Electricity</option>
     <option>Internet</option>
     <option>Water</option>
     <option>Road</option>
   </select>
+
   <textarea id="desc" placeholder="Description"></textarea>
-  <button onclick="addComplaint()">Submit</button>
+
+  <button onclick="addComplaint()">
+    Submit Complaint
+  </button>
+
 </div>
 
 <!-- SEARCH -->
-<input class="search" id="search" placeholder="Search..." onkeyup="search()">
+<input
+  id="search"
+  class="search"
+  placeholder="Search..."
+  onkeyup="searchComplaint()"
+/>
 
-<!-- DATA -->
-<div id="complaints" class="grid"></div>
+<!-- COMPLAINTS -->
+<div id="complaints"></div>
 
 </div>
 </div>
 </div>
 
-<script type="module" src="script.js"></script>
+<script type="module" src="./script.js"></script>
+
 </body>
 </html>
