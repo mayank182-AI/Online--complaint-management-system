@@ -1,62 +1,109 @@
-import { auth, db } from "./firebase.js";
+import { db } from "./firebase.js";
 
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-import {
-  collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const ADMIN_EMAIL = "admin@gmail.com";
-let isAdmin = false;
-let data = [];
+/* ================= OTP ================= */
 
-// REGISTER
-window.register = async ()=>{
-  try{
-    await createUserWithEmailAndPassword(auth,
-      document.getElementById("email").value,
-      document.getElementById("password").value
-    );
-    alert("Registered");
-  }catch(e){
-    alert(e.message);
-  }
-};
+emailjs.init("mNOMockxX8zfBy_Va");
 
-// LOGIN
-window.login = async ()=>{
-  try{
-    await signInWithEmailAndPassword(auth,
-      document.getElementById("email").value,
-      document.getElementById("password").value
-    );
-    alert("Login success");
-  }catch(e){
-    alert(e.message);
-  }
-};
+let generatedOTP = "";
+let currentEmail = "";
 
-// LOGOUT
-window.logout = async ()=>{
-  await signOut(auth);
-};
+window.sendOTP = async ()=>{
 
-// ADD (FIXED)
-window.addComplaint = async ()=>{
-  if(!auth.currentUser){
-    alert("Login first");
+  const email =
+    document.getElementById("email").value;
+
+  if(!email){
+    alert("Enter Email");
     return;
   }
 
-  const name = document.getElementById("name").value;
-  const title = document.getElementById("title").value;
-  const category = document.getElementById("category").value;
-  const desc = document.getElementById("desc").value;
+  currentEmail = email;
+
+  generatedOTP =
+    Math.floor(100000 + Math.random()*900000)
+    .toString();
+
+  const params = {
+    email: email,
+    otp: generatedOTP
+  };
+
+  try{
+
+    await emailjs.send(
+      "service_09xw7v8",
+      "template_4ghi645",
+      params
+    );
+
+    alert("OTP Sent");
+
+    console.log(generatedOTP);
+
+    // OTP Expiry
+    setTimeout(()=>{
+      generatedOTP = "";
+    },120000);
+
+  }catch(err){
+
+    console.log(err);
+
+    alert("Failed to send OTP");
+  }
+};
+
+window.verifyOTP = ()=>{
+
+  const otp =
+    document.getElementById("otp").value;
+
+  if(otp === generatedOTP){
+
+    alert("Login Success");
+
+    document.getElementById("authBox")
+      .style.display = "none";
+
+    document.getElementById("app")
+      .style.display = "block";
+
+    generatedOTP = "";
+
+    showAll();
+
+  }else{
+    alert("Invalid OTP");
+  }
+};
+
+/* ================= COMPLAINT ================= */
+
+let data = [];
+
+/* ADD */
+window.addComplaint = async ()=>{
+
+  const name =
+    document.getElementById("name").value;
+
+  const title =
+    document.getElementById("title").value;
+
+  const category =
+    document.getElementById("category").value;
+
+  const desc =
+    document.getElementById("desc").value;
 
   if(!name || !title || !desc){
     alert("Fill all fields");
@@ -64,104 +111,164 @@ window.addComplaint = async ()=>{
   }
 
   await addDoc(collection(db,"complaints"),{
-    uid: auth.currentUser.uid,
+
+    email: currentEmail,
+
     name,
     title,
     category,
     desc,
+
     status:"Pending"
+
   });
 
-  alert("Added");
+  alert("Complaint Added");
+
   showAll();
 };
 
-// READ
-async function showAll(){
+/* SHOW */
+window.showAll = async ()=>{
 
-  let q;
+  const snap =
+    await getDocs(collection(db,"complaints"));
 
-  if(isAdmin){
-    q = collection(db,"complaints");
-  }else{
-    q = query(collection(db,"complaints"),
-      where("uid","==",auth.currentUser.uid)
-    );
-  }
+  data = [];
 
-  const snap = await getDocs(q);
-  data=[];
+  snap.forEach(docu=>{
 
-  snap.forEach(d=>data.push({id:d.id,...d.data()}));
+    data.push({
+      id:docu.id,
+      ...docu.data()
+    });
+
+  });
 
   render(data);
-}
+};
 
-// RENDER
+/* RENDER */
 function render(list){
+
   let p=0,r=0;
 
-  document.getElementById("complaints").innerHTML =
-    list.map(c=>{
-      c.status=="Pending"?p++:r++;
+  document.getElementById("complaints")
+  .innerHTML =
 
-      return `
-      <div>
-        ${isAdmin ? `<small>${c.name}</small>` : ""}
-        <h3>${c.title}</h3>
-        <p>${c.desc}</p>
-        <button onclick="toggle('${c.id}','${c.status}')">Toggle</button>
-        <button onclick="removeItem('${c.id}')">Delete</button>
-      </div>`;
-    }).join("");
+  list.map(c=>{
 
-  document.getElementById("total").innerText=list.length;
-  document.getElementById("pending").innerText=p;
-  document.getElementById("resolved").innerText=r;
+    c.status=="Pending"?p++:r++;
+
+    return `
+
+    <div class="box">
+
+      <small>${c.email}</small>
+
+      <h3>${c.title}</h3>
+
+      <p>${c.desc}</p>
+
+      <b>${c.category}</b>
+
+      <br><br>
+
+      <span class="${
+        c.status=="Pending"
+        ?"red":"green"
+      }">
+
+      ${c.status}
+
+      </span>
+
+      <br><br>
+
+      <button onclick="
+      toggleStatus(
+      '${c.id}',
+      '${c.status}'
+      )">
+
+      Toggle
+
+      </button>
+
+      <button onclick="
+      removeComplaint(
+      '${c.id}'
+      )">
+
+      Delete
+
+      </button>
+
+    </div>
+    `;
+
+  }).join("");
+
+  document.getElementById("total")
+  .innerText = list.length;
+
+  document.getElementById("pending")
+  .innerText = p;
+
+  document.getElementById("resolved")
+  .innerText = r;
 }
 
-// UPDATE
-window.toggle = async(id,status)=>{
-  await updateDoc(doc(db,"complaints",id),{
-    status: status=="Pending"?"Resolved":"Pending"
-  });
-  showAll();
-};
+/* UPDATE */
+window.toggleStatus =
+async(id,status)=>{
 
-// DELETE
-window.removeItem = async(id)=>{
-  await deleteDoc(doc(db,"complaints",id));
-  showAll();
-};
-
-// SEARCH
-window.search = ()=>{
-  let k = document.getElementById("search").value.toLowerCase();
-  render(data.filter(c=>c.title.toLowerCase().includes(k)));
-};
-
-// AUTH STATE (FIXED CORE)
-onAuthStateChanged(auth,(user)=>{
-  console.log("User:", user);
-
-  const authBox = document.getElementById("authBox");
-  const app = document.getElementById("app");
-  const adminPanel = document.getElementById("adminPanel");
-
-  if(user){
-    isAdmin = user.email === ADMIN_EMAIL;
-
-    authBox.style.display="none";
-    app.style.display="block";
-
-    if(adminPanel){
-      adminPanel.style.display = isAdmin ? "block" : "none";
+  await updateDoc(
+    doc(db,"complaints",id),
+    {
+      status:
+      status=="Pending"
+      ?"Resolved"
+      :"Pending"
     }
+  );
 
-    showAll();
+  showAll();
+};
 
-  }else{
-    authBox.style.display="block";
-    app.style.display="none";
-  }
-});
+/* DELETE */
+window.removeComplaint =
+async(id)=>{
+
+  await deleteDoc(
+    doc(db,"complaints",id)
+  );
+
+  showAll();
+};
+
+/* SEARCH */
+window.searchComplaint = ()=>{
+
+  const k =
+  document.getElementById("search")
+  .value.toLowerCase();
+
+  render(
+
+    data.filter(c=>
+
+      c.title.toLowerCase().includes(k)
+      ||
+
+      c.desc.toLowerCase().includes(k)
+    )
+
+  );
+};
+
+/* CLEAR */
+window.clearAll = async ()=>{
+
+  alert("Delete manually or extend feature");
+};
