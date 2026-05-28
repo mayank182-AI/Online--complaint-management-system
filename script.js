@@ -272,3 +272,4 @@ window.clearAll = async ()=>{
 
   alert("Delete manually or extend feature");
 };
+ 
