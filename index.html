@@ -1,40 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Complaint System</title>
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Smart Complaint Dashboard</title>
 
   <link rel="stylesheet" href="style.css">
 
   <!-- EMAILJS -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
 </head>
 
 <body>
 
 <!-- HEADER -->
 <header>
+
   <h2>🚀 Smart Complaint Dashboard</h2>
-  <button onclick="logout()">Logout</button>
+
+  <button onclick="logout()">
+    Logout
+  </button>
+
 </header>
 
-<!-- AUTH -->
+<!-- LOGIN -->
 <div id="authBox">
 
   <h2>Email OTP Login</h2>
 
-  <input type="email" id="email" placeholder="Enter Email">
+  <input
+    type="email"
+    id="email"
+    placeholder="Enter Email"
+  >
 
-  <button onclick="sendOTP()">Send OTP</button>
+  <button onclick="sendOTP()">
+    Send OTP
+  </button>
 
-  <input type="text" id="otp" placeholder="Enter OTP">
+  <input
+    type="text"
+    id="otp"
+    placeholder="Enter OTP"
+  >
 
-  <button onclick="verifyOTP()">Verify OTP</button>
+  <button onclick="verifyOTP()">
+    Verify OTP
+  </button>
 
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="app" style="display:none;">
 
 <div class="container">
@@ -44,9 +69,13 @@
 
   <h2>Menu</h2>
 
-  <div onclick="showAll()">📋 All Complaints</div>
+  <div onclick="showAll()">
+    📋 All Complaints
+  </div>
 
-  <div onclick="clearAll()">🗑 Clear All</div>
+  <div onclick="clearAll()">
+    🗑 Clear All
+  </div>
 
 </div>
 
@@ -57,18 +86,27 @@
 <div class="cards">
 
   <div class="card total">
+
     Total
+
     <h2 id="total">0</h2>
+
   </div>
 
   <div class="card pending">
+
     Pending
+
     <h2 id="pending">0</h2>
+
   </div>
 
   <div class="card resolved">
+
     Resolved
+
     <h2 id="resolved">0</h2>
+
   </div>
 
 </div>
@@ -78,18 +116,32 @@
 
   <h3>Add Complaint</h3>
 
-  <input id="name" placeholder="Your Name">
+  <input
+    id="name"
+    placeholder="Your Name"
+  >
 
-  <input id="title" placeholder="Complaint Title">
+  <input
+    id="title"
+    placeholder="Complaint Title"
+  >
 
   <select id="category">
+
     <option>Electricity</option>
+
     <option>Internet</option>
+
     <option>Water</option>
+
     <option>Road</option>
+
   </select>
 
-  <textarea id="desc" placeholder="Description"></textarea>
+  <textarea
+    id="desc"
+    placeholder="Description"
+  ></textarea>
 
   <button onclick="addComplaint()">
     Submit Complaint
@@ -101,7 +153,7 @@
 <input
   id="search"
   class="search"
-  placeholder="Search..."
+  placeholder="Search Complaint..."
   onkeyup="searchComplaint()"
 />
 
@@ -115,4 +167,4 @@
 <script type="module" src="./script.js"></script>
 
 </body>
-</html> 
+</html>
