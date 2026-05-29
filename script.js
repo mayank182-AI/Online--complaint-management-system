@@ -6,15 +6,23 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  serverTimestamp,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* ================= OTP ================= */
+/* EMAILJS */
 
 emailjs.init("mNOMockxX8zfBy_Va");
 
+/* VARIABLES */
+
 let generatedOTP = "";
+
 let currentEmail = "";
+
+let data = [];
+
+/* SEND OTP */
 
 window.sendOTP = async ()=>{
 
@@ -22,75 +30,138 @@ window.sendOTP = async ()=>{
     document.getElementById("email").value;
 
   if(!email){
+
     alert("Enter Email");
+
     return;
   }
 
   currentEmail = email;
 
   generatedOTP =
-    Math.floor(100000 + Math.random()*900000)
-    .toString();
+    Math.floor(
+      100000 + Math.random()*900000
+    ).toString();
 
   const params = {
+
     email: email,
+
     otp: generatedOTP
+
   };
 
   try{
 
     await emailjs.send(
+
       "service_09xw7v8",
-      "template_4ghi645",
+
+      "template_j8346vw",
+
       params
+
     );
 
     alert("OTP Sent");
 
-    console.log(generatedOTP);
-
-    // OTP Expiry
     setTimeout(()=>{
+
       generatedOTP = "";
+
     },120000);
 
   }catch(err){
 
     console.log(err);
 
-    alert("Failed to send OTP");
+    alert("Failed To Send OTP");
   }
 };
 
-window.verifyOTP = ()=>{
+/* VERIFY OTP */
+
+window.verifyOTP = async ()=>{
 
   const otp =
     document.getElementById("otp").value;
 
   if(otp === generatedOTP){
 
-    alert("Login Success");
+    try{
 
-    document.getElementById("authBox")
-      .style.display = "none";
+      // SAVE LOGIN HISTORY
+      await addDoc(
+        collection(db,"loginHistory"),
+        {
 
-    document.getElementById("app")
-      .style.display = "block";
+          email: currentEmail,
 
-    generatedOTP = "";
+          loginTime: serverTimestamp(),
 
-    showAll();
+          status: "Success"
+
+        }
+      );
+
+      alert("Login Success");
+
+      document.getElementById("authBox")
+        .style.display = "none";
+
+      document.getElementById("app")
+        .style.display = "block";
+
+      generatedOTP = "";
+
+      showAll();
+
+    }catch(err){
+
+      console.log(err);
+
+      alert("Login Failed");
+    }
 
   }else{
+
+    // SAVE FAILED ATTEMPT
+    await addDoc(
+      collection(db,"loginHistory"),
+      {
+
+        email: currentEmail,
+
+        loginTime: serverTimestamp(),
+
+        status: "Failed"
+
+      }
+    );
+
     alert("Invalid OTP");
   }
 };
 
-/* ================= COMPLAINT ================= */
+/* LOGOUT */
 
-let data = [];
+window.logout = ()=>{
 
-/* ADD */
+  document.getElementById("app")
+    .style.display = "none";
+
+  document.getElementById("authBox")
+    .style.display = "block";
+
+  document.getElementById("email").value = "";
+
+  document.getElementById("otp").value = "";
+
+  currentEmail = "";
+};
+
+/* ADD COMPLAINT */
+
 window.addComplaint = async ()=>{
 
   const name =
@@ -106,59 +177,104 @@ window.addComplaint = async ()=>{
     document.getElementById("desc").value;
 
   if(!name || !title || !desc){
-    alert("Fill all fields");
+
+    alert("Fill All Fields");
+
     return;
   }
 
-  await addDoc(collection(db,"complaints"),{
+  try{
 
-    email: currentEmail,
+    await addDoc(
+      collection(db,"complaints"),
+      {
 
-    name,
-    title,
-    category,
-    desc,
+        email: currentEmail,
 
-    status:"Pending"
+        name,
 
-  });
+        title,
 
-  alert("Complaint Added");
+        category,
 
-  showAll();
+        desc,
+
+        status: "Pending",
+
+        createdAt: serverTimestamp()
+
+      }
+    );
+
+    alert("Complaint Added");
+
+    document.getElementById("name").value = "";
+
+    document.getElementById("title").value = "";
+
+    document.getElementById("desc").value = "";
+
+    showAll();
+
+  }catch(err){
+
+    console.log(err);
+
+    alert("Failed To Add");
+  }
 };
 
-/* SHOW */
+/* SHOW ALL */
+
 window.showAll = async ()=>{
 
-  const snap =
-    await getDocs(collection(db,"complaints"));
+  try{
 
-  data = [];
+    const snap =
+      await getDocs(
+        collection(db,"complaints")
+      );
 
-  snap.forEach(docu=>{
+    data = [];
 
-    data.push({
-      id:docu.id,
-      ...docu.data()
+    snap.forEach(docu=>{
+
+      data.push({
+
+        id: docu.id,
+
+        ...docu.data()
+
+      });
+
     });
 
-  });
+    render(data);
 
-  render(data);
+  }catch(err){
+
+    console.log(err);
+
+    alert("Failed To Load");
+  }
 };
 
 /* RENDER */
+
 function render(list){
 
-  let p=0,r=0;
+  let p = 0;
+
+  let r = 0;
 
   document.getElementById("complaints")
   .innerHTML =
 
   list.map(c=>{
 
-    c.status=="Pending"?p++:r++;
+    c.status=="Pending"
+    ? p++
+    : r++;
 
     return `
 
@@ -176,7 +292,8 @@ function render(list){
 
       <span class="${
         c.status=="Pending"
-        ?"red":"green"
+        ? "red"
+        : "green"
       }">
 
       ${c.status}
@@ -210,66 +327,121 @@ function render(list){
   }).join("");
 
   document.getElementById("total")
-  .innerText = list.length;
+    .innerText = list.length;
 
   document.getElementById("pending")
-  .innerText = p;
+    .innerText = p;
 
   document.getElementById("resolved")
-  .innerText = r;
+    .innerText = r;
 }
 
-/* UPDATE */
+/* TOGGLE STATUS */
+
 window.toggleStatus =
 async(id,status)=>{
 
-  await updateDoc(
-    doc(db,"complaints",id),
-    {
-      status:
-      status=="Pending"
-      ?"Resolved"
-      :"Pending"
-    }
-  );
+  try{
 
-  showAll();
+    await updateDoc(
+      doc(db,"complaints",id),
+      {
+
+        status:
+        status=="Pending"
+        ? "Resolved"
+        : "Pending"
+
+      }
+    );
+
+    showAll();
+
+  }catch(err){
+
+    console.log(err);
+
+    alert("Update Failed");
+  }
 };
 
 /* DELETE */
+
 window.removeComplaint =
 async(id)=>{
 
-  await deleteDoc(
-    doc(db,"complaints",id)
-  );
+  try{
 
-  showAll();
+    await deleteDoc(
+      doc(db,"complaints",id)
+    );
+
+    showAll();
+
+  }catch(err){
+
+    console.log(err);
+
+    alert("Delete Failed");
+  }
 };
 
 /* SEARCH */
+
 window.searchComplaint = ()=>{
 
   const k =
-  document.getElementById("search")
-  .value.toLowerCase();
+    document.getElementById("search")
+    .value.toLowerCase();
 
   render(
 
     data.filter(c=>
 
       c.title.toLowerCase().includes(k)
+
       ||
 
       c.desc.toLowerCase().includes(k)
+
+      ||
+
+      c.category.toLowerCase().includes(k)
+
     )
 
   );
 };
 
-/* CLEAR */
+/* CLEAR ALL */
+
 window.clearAll = async ()=>{
 
-  alert("Delete manually or extend feature");
+  const ok =
+    confirm("Delete All Complaints?");
+
+  if(!ok) return;
+
+  try{
+
+    const snap =
+      await getDocs(
+        collection(db,"complaints")
+      );
+
+    for(const d of snap.docs){
+
+      await deleteDoc(
+        doc(db,"complaints",d.id)
+      );
+    }
+
+    showAll();
+
+  }catch(err){
+
+    console.log(err);
+
+    alert("Clear Failed");
+  }
 };
- 
